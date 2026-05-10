@@ -5,11 +5,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e1yvt"]
 size = Vector2(80, 80)
 
-[node name="target" type="Node2D" unique_id=328927553]
-script = ExtResource("1_t2jmu")
+[node name="Target" type="Node2D" unique_id=328927553]
 
 [node name="Area2D" type="Area2D" parent="." unique_id=2007281362]
 script = ExtResource("1_t2jmu")
+input_pickable = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1320086893]
 shape = SubResource("RectangleShape2D_e1yvt")
@@ -25,3 +25,4 @@ color = Color(1, 0, 0, 1)
 
 [connection signal="input_event" from="Area2D" to="Area2D" method="_on_input_event"]
 [connection signal="mouse_entered" from="Area2D" to="Area2D" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="Area2D" to="Area2D" method="_on_mouse_exited"]

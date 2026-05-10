@@ -244,8 +244,8 @@ func _create_progress_screen() -> void:
 	progress_panel.offset_top = -220.0
 	progress_panel.offset_right = 320.0
 	progress_panel.offset_bottom = 220.0
-	progress_panel.grow_horizontal = 2
-	progress_panel.grow_vertical = 2
+	progress_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	progress_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	# Jasne tło panelu dla kontrastu
 	progress_panel.modulate = Color(0.95, 0.95, 0.98, 1)
 	progress_screen.add_child(progress_panel)
@@ -286,6 +286,8 @@ func _create_progress_screen() -> void:
 	btn_box.anchor_right = 0.9
 	btn_box.anchor_bottom = 0.96
 	btn_box.grow_horizontal = 2
+	btn_box.grow_vertical = 2
+	btn_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	btn_box.add_theme_constant_override("separation", 20)
 	progress_panel.add_child(btn_box)
 	

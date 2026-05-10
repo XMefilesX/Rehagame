@@ -268,8 +268,8 @@ func _create_progress_screen() -> void:
 	scroll.anchor_top = 0.18
 	scroll.anchor_right = 0.96
 	scroll.anchor_bottom = 0.82
-	scroll.grow_horizontal = 2
-	scroll.grow_vertical = 2
+	scroll.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	scroll.grow_vertical = Control.GROW_DIRECTION_BOTH
 	progress_panel.add_child(scroll)
 	
 	progress_list = VBoxContainer.new()
@@ -285,9 +285,8 @@ func _create_progress_screen() -> void:
 	btn_box.anchor_top = 0.85
 	btn_box.anchor_right = 0.9
 	btn_box.anchor_bottom = 0.96
-	btn_box.grow_horizontal = 2
-	btn_box.grow_vertical = 2
 	btn_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	btn_box.grow_vertical = Control.GROW_DIRECTION_BOTH
 	btn_box.add_theme_constant_override("separation", 20)
 	progress_panel.add_child(btn_box)
 	

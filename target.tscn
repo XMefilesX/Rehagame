@@ -21,3 +21,6 @@ offset_top = -40.0
 offset_right = 40.0
 offset_bottom = 40.0
 color = Color(1, 0, 0, 1)
+
+[connection signal="input_event" from="Area2D" to="Area2D" method="_on_input_event"]
+[connection signal="mouse_entered" from="Area2D" to="Area2D" method="_on_mouse_entered"]

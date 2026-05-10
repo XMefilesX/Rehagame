@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c2moxdg0s1u01"]
 
-[ext_resource type="Script" uid="uid://bn3jkof4e4bgq" path="res://target.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://d2n4hd6ojb7bo" path="res://main.gd" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://5fr1dcew4nqy" path="res://target.tscn" id="2_h2yge"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_7dm0k"]
@@ -25,3 +25,34 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="target" parent="." unique_id=328927553 instance=ExtResource("2_h2yge")]
+
+[node name="SpawnTimer" type="Timer" parent="." unique_id=602125577]
+
+[node name="SessionTimer" type="Timer" parent="." unique_id=83596729]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1624969366]
+
+[node name="Panel" type="Panel" parent="UI" unique_id=12723512]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI" unique_id=1176401485]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="UI" unique_id=431927914]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Menu" type="CanvasLayer" parent="." unique_id=144992789]
+
+[node name="Start" type="Button" parent="Menu" unique_id=1358806938]
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="Restart" type="Button" parent="Menu" unique_id=1945557260]
+offset_right = 8.0
+offset_bottom = 8.0
+
+[connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
+[connection signal="timeout" from="SessionTimer" to="." method="_on_session_timer_timeout"]

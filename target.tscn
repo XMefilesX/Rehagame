@@ -11,7 +11,7 @@ script = ExtResource("1_t2jmu")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1320086893]
 shape = SubResource("RectangleShape2D_e1yvt")
 
-[node name="ColorRect" type="ColorRect" parent="Area2D" unique_id=158331593]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=158331593]
 custom_minimum_size = Vector2(80, 80)
 anchors_preset = -1
 offset_left = -40.0

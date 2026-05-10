@@ -29,8 +29,8 @@ const FAST_REACTION_THRESHOLD: float = 0.5
 @onready var label_wynik: Label      = $UI/Panel/LabelWynik
 @onready var label_punkty: Label     = $UI/Panel/LabelPunkty
 @onready var menu: CanvasLayer       = $Menu
-@onready var btn_start: Button       = $Menu/Start
-@onready var btn_restart: Button     = $Menu/Restart
+@onready var btn_start: Button       = $Menu/VBoxMenuContainer/Start
+@onready var btn_restart: Button     = $Menu/VBoxMenuContainer/Restart
 
 # ===========================================================
 # ZASOBY
@@ -153,22 +153,24 @@ func _calculate_average() -> float:
 # ===========================================================
 func _save_session(average: float) -> void:
 	var session: Dictionary = {
-		"date":              Time.get_datetime_string_from_system(),
-		"hits":              hits,
-		"score":             score,
-		"average_reaction":  snappedf(average, 0.01),
-		"duration_s":        SESSION_DURATION
+		"date": Time.get_datetime_string_from_system(),
+		"hits": hits,
+		"score": score,
+		"average_reaction": snappedf(average, 0.01),
+		"duration_s": SESSION_DURATION
 	}
-
+	
 	var sessions: Array = _load_sessions()
 	sessions.append(session)
-
+	
 	var file := FileAccess.open("user://sessions.json", FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(sessions, "\t"))
 		file.close()
+		print("✅ Sesja zapisana do user://sessions.json")
 	else:
-		push_warning("Main: nie można zapisać sesji – " + FileAccess.get_open_error_description(FileAccess.get_open_error()))
+		var err := FileAccess.get_open_error()
+		push_warning("Main: nie można zapisać sesji – " + error_string(err))
 
 func _load_sessions() -> Array:
 	if not FileAccess.file_exists("user://sessions.json"):

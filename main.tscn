@@ -14,7 +14,7 @@ grow_vertical = 2
 color = Color(0.08, 0.08, 0.12, 1)
 
 [node name="LabelTytul" type="Label" parent="Tlo" unique_id=1746373460]
-anchors_preset = 5
+layout_mode = 0
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -200.0
@@ -44,33 +44,34 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="LabelSredni" type="Label" parent="UI/Panel" unique_id=1014504088]
-anchors_preset = 1
+layout_mode = 1
+anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
 offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 50.0
-layout_mode = 1
 
 [node name="LabelTrafienia" type="Label" parent="UI/Panel" unique_id=102674652]
-anchors_preset = 1
+layout_mode = 1
+anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
 offset_top = 60.0
 offset_right = -20.0
 offset_bottom = 90.0
-layout_mode = 1
 
 [node name="LabelPunkty" type="Label" parent="UI/Panel" unique_id=987654321]
-anchors_preset = 1
+layout_mode = 1
+anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
 offset_top = 100.0
 offset_right = -20.0
 offset_bottom = 130.0
-layout_mode = 1
 
 [node name="LabelWynik" type="Label" parent="UI/Panel" unique_id=382216536]
+layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -78,7 +79,6 @@ offset_left = -120.0
 offset_top = 145.0
 offset_right = 120.0
 offset_bottom = 185.0
-layout_mode = 1
 horizontal_alignment = 1
 
 [node name="Menu" type="CanvasLayer" parent="." unique_id=144992789]
@@ -99,10 +99,12 @@ theme_override_constants/separation = 16
 
 [node name="Start" type="Button" parent="Menu/VBoxMenuContainer" unique_id=1358806938]
 custom_minimum_size = Vector2(240, 60)
+layout_mode = 2
 text = "▶  Start"
 
 [node name="Restart" type="Button" parent="Menu/VBoxMenuContainer" unique_id=1945557260]
 custom_minimum_size = Vector2(240, 60)
+layout_mode = 2
 text = "↺  Restart"
 
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]

@@ -5,13 +5,25 @@ extends Area2D
 var spawn_time: float = 0.0
 # Referencja do węzła Main – ustawiana przez Main.spawn_target()
 var main_node: Node = null
+# Prędkość ruchu celu (dla elementu śledzenia obiektów – wymaganie PDF)
+var velocity: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	spawn_time = Time.get_ticks_msec() / 1000.0
+	# Losowy ruch w lewo/prawo i góra/dół – gracz musi śledzić cel
+	velocity = Vector2(randf_range(-45.0, 45.0), randf_range(-35.0, 35.0))
 
 ## Ustawia referencję do węzła Main (wywoływane przez Main po add_child)
 func set_main(node: Node) -> void:
 	main_node = node
+
+func _process(delta: float) -> void:
+	position += velocity * delta
+	# Odbicie od krawędzi ekranu (proste bounce)
+	if position.x < 60 or position.x > 1220:
+		velocity.x = -velocity.x * 0.95  # Lekkie tłumienie
+	if position.y < 60 or position.y > 660:
+		velocity.y = -velocity.y * 0.95
 
 func _on_input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton \

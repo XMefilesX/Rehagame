@@ -6,6 +6,7 @@
 size = Vector2(80, 80)
 
 [node name="target" type="Node2D" unique_id=328927553]
+script = ExtResource("1_t2jmu")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=2007281362]
 script = ExtResource("1_t2jmu")

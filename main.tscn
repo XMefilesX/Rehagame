@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://c2moxdg0s1u01"]
+
+[ext_resource type="Script" uid="uid://bn3jkof4e4bgq" path="res://target.gd" id="1_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://5fr1dcew4nqy" path="res://target.tscn" id="2_h2yge"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_7dm0k"]
+
+[node name="Main" type="Node2D" unique_id=1466869044]
+script = ExtResource("1_0xm2m")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1279080319]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="ColorRect" unique_id=1746373460]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Witaj w grze reakcyjnej"
+label_settings = SubResource("LabelSettings_7dm0k")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="target" parent="." unique_id=328927553 instance=ExtResource("2_h2yge")]

@@ -35,3 +35,7 @@ ai_assistant_hub/preferences/audio_hints=true
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+
+[autoload]
+
+DifficultyManager="*res://DifficultyManager.gd"

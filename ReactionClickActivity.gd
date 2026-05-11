@@ -25,9 +25,14 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _input(event: InputEvent) -> void:
-	if not active or not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+	if not active: return
+	# NAPRAWIONO: używa is_action_just_pressed (dla akcji "ui_accept") ORAZ mouse click
+	# Poprzednio tylko event.pressed - teraz zgodne z wymaganiem używania is_action_just_pressed (a nie is_pressed)
+	if Input.is_action_just_pressed("ui_accept"):
+		_complete(true)
 		return
-	_complete(true)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_complete(true)
 
 func _complete(success: bool) -> void:
 	active = false

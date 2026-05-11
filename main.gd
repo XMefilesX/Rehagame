@@ -300,6 +300,19 @@ func _save_session(average: float) -> void:
 		var err := FileAccess.get_open_error()
 		push_warning("Main: nie można zapisać sesji – " + error_string(err))
 
+func _load_sessions() -> Array:
+	if not FileAccess.file_exists("user://sessions.json"):
+		return []
+	var file := FileAccess.open("user://sessions.json", FileAccess.READ)
+	if not file:
+		return []
+	var content: String = file.get_as_text()
+	file.close()
+	var parsed = JSON.parse_string(content)
+	if parsed is Array:
+		return parsed
+	return []
+
 # ===========================================================
 # WEJŚCIE – pauza przez ESC (Poprawka #14)
 # ===========================================================

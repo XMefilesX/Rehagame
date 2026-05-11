@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b6l6cciht1v7l"]
+
+[ext_resource type="Script" uid="uid://c6xx0r1au71hf" path="res://ReactionClickActivity.gd" id="1_efj70"]
+
+[node name="ReactionClickActivity" type="Node2D" unique_id=1416773716]
+script = ExtResource("1_efj70")

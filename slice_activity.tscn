@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bhhbliabyjr73"]
+
+[ext_resource type="Script" uid="uid://bk61k0n6w47bf" path="res://SliceActivity.gd" id="1_a6umw"]
+
+[node name="SliceActivity" type="Node2D" unique_id=206965150]
+script = ExtResource("1_a6umw")

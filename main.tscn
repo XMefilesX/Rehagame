@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://c2moxdg0s1u01"]
 
-[ext_resource type="Script" uid="uid://d2n4hd6ojb7bo" path="res://main.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://dlpdngv60okub" path="res://DifficultyManager.gd" id="1_ig7tw"]
 
 [node name="Main" type="Node2D" unique_id=1466869044]
-script = ExtResource("1_0xm2m")
+script = ExtResource("1_ig7tw")
 
 [node name="Tlo" type="ColorRect" parent="." unique_id=1279080319]
 anchors_preset = 15
@@ -51,6 +51,7 @@ offset_left = 20.0
 offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 50.0
+grow_horizontal = 2
 
 [node name="LabelTrafienia" type="Label" parent="UI/Panel" unique_id=102674652]
 layout_mode = 1
@@ -60,6 +61,7 @@ offset_left = 20.0
 offset_top = 60.0
 offset_right = -20.0
 offset_bottom = 90.0
+grow_horizontal = 2
 
 [node name="LabelPunkty" type="Label" parent="UI/Panel" unique_id=987654321]
 layout_mode = 1
@@ -69,6 +71,7 @@ offset_left = 20.0
 offset_top = 100.0
 offset_right = -20.0
 offset_bottom = 130.0
+grow_horizontal = 2
 
 [node name="LabelWynik" type="Label" parent="UI/Panel" unique_id=382216536]
 layout_mode = 1
@@ -79,6 +82,7 @@ offset_left = -120.0
 offset_top = 145.0
 offset_right = 120.0
 offset_bottom = 185.0
+grow_horizontal = 2
 horizontal_alignment = 1
 
 [node name="Menu" type="CanvasLayer" parent="." unique_id=144992789]

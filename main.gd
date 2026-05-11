@@ -45,6 +45,18 @@ var circle_scene: PackedScene = preload("res://CircleSpinActivity.tscn")
 
 var rotational_active: bool = false
 var current_spawn_timer: Timer
+
+# ===========================================================
+# NOWA STRUKTURA: 4 SEKCJE (losowa kolejność)
+# ===========================================================
+enum ActivityType { TARGET, SLICE, REACTION, CIRCLE }
+
+var section_order: Array[ActivityType] = []
+var section_durations: Array[float] = []
+var cumulative_section_ends: Array[float] = []
+var current_section: int = 0
+var section_start_time: float = 0.0
+
 # ===========================================================
 # DANE SESJI
 # ===========================================================
@@ -130,31 +142,78 @@ func _reset_session_data() -> void:
 	panel_wynikow.visible = false
 
 # ===========================================================
-# SPAWN CELÓW
+# NOWA LOGIKA: GENEROWANIE 4 SEKCJI (losowa kolejność + min 10% każda)
 # ===========================================================
-# === TYLKO JEDNA AKTYWNOŚĆ NARAZ + AUTOMATYCZNY SPAWN KOLEJNEJ ===
+func _generate_sections() -> void:
+	section_order.clear()
+	section_durations.clear()
+	cumulative_section_ends.clear()
+	
+	var types: Array[ActivityType] = [ActivityType.TARGET, ActivityType.SLICE, ActivityType.REACTION, ActivityType.CIRCLE]
+	types.shuffle()
+	section_order = types
+	
+	# Każda sekcja ≥ 10% rozgrywki (min 3s przy 30s)
+	var min_section: float = SESSION_DURATION * 0.10
+	var remaining: float = SESSION_DURATION - 4 * min_section
+	
+	var extras: Array[float] = []
+	for i in 4:
+		extras.append(randf_range(0.0, remaining * 0.6))
+	
+	var sum_extra: float = 0.0
+	for e in extras:
+		sum_extra += e
+	if sum_extra > 0.001:
+		for i in 4:
+			extras[i] = extras[i] / sum_extra * remaining
+	
+	var cum: float = 0.0
+	for i in 4:
+		var dur = min_section + extras[i]
+		section_durations.append(dur)
+		cum += dur
+		cumulative_section_ends.append(cum)
+	
+	print("[Rehagame] Wygenerowano 4 sekcje (losowa kolejność): ", section_order)
+	print("[Rehagame] Czasy sekcji: ", section_durations, " (suma: ", cum, ")")
+
+# ===========================================================
+# SPAWN CELÓW – TERAZ ZGODNIE Z BIEŻĄCĄ SEKCJĄ (tylko 1 typ na sekcję)
+# ===========================================================
 func _on_spawn_timer_timeout() -> void:
 	if not session_active or rotational_active or is_activity_active:
 		return
 
-	var roll = randf()
-	var activity = null
-
-	if roll < 0.35:
-		# Target nie ma sygnału activity_completed – obsługa przez register_hit
-		var target = target_scene.instantiate()
-		add_child(target)
-		is_activity_active = true
-		# Po zakończeniu sesji lub usunięciu targeta ręcznie resetujemy flagę
-		get_tree().create_timer(1.5).timeout.connect(func(): is_activity_active = false)
+	if current_section >= 4:
 		return
-	elif roll < 0.55:
-		activity = slice_scene.instantiate()
-	elif roll < 0.75:
-		activity = reaction_scene.instantiate()
-	else:
-		activity = circle_scene.instantiate()
-		rotational_active = true
+
+	var act_type: ActivityType = section_order[current_section]
+	var activity = null
+	var is_rot: bool = false
+
+	match act_type:
+		ActivityType.TARGET:
+			var target = target_scene.instantiate()
+			add_child(target)
+			is_activity_active = true
+			get_tree().create_timer(1.5).timeout.connect(func(): is_activity_active = false)
+			return
+		ActivityType.SLICE:
+			activity = slice_scene.instantiate()
+			# Losowa długość aktywności (skalowanie procentowe względem trudności)
+			if activity:
+				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.75, 1.35)
+		ActivityType.REACTION:
+			activity = reaction_scene.instantiate()
+			if activity:
+				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.7, 1.3)
+		ActivityType.CIRCLE:
+			activity = circle_scene.instantiate()
+			is_rot = true
+			rotational_active = true
+			if activity:
+				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.8, 1.4)
 
 	if activity == null:
 		return
@@ -162,19 +221,10 @@ func _on_spawn_timer_timeout() -> void:
 	add_child(activity)
 	is_activity_active = true
 
-	if DifficultyManager.is_solo_only(activity):
+	if is_rot:
 		activity.activity_completed.connect(_on_rotational_completed.bind(activity))
 	else:
 		activity.activity_completed.connect(_on_activity_completed.bind(activity))
-		
-func _spawn_target() -> void:
-	var target: Target = target_scene.instantiate()
-	target.position = Vector2(
-		randf_range(SPAWN_MIN_X, SPAWN_MAX_X),
-		randf_range(SPAWN_MIN_Y, SPAWN_MAX_Y)
-	)
-	target.set_main(self)   # Wstrzyknięcie referencji – rozwiązuje Błąd #2
-	add_child(target)
 
 # ===========================================================
 # REJESTROWANIE TRAFIEŃ (wywoływane przez Target)
@@ -249,19 +299,6 @@ func _save_session(average: float) -> void:
 	else:
 		var err := FileAccess.get_open_error()
 		push_warning("Main: nie można zapisać sesji – " + error_string(err))
-
-func _load_sessions() -> Array:
-	if not FileAccess.file_exists("user://sessions.json"):
-		return []
-	var file := FileAccess.open("user://sessions.json", FileAccess.READ)
-	if not file:
-		return []
-	var content: String = file.get_as_text()
-	file.close()
-	var parsed = JSON.parse_string(content)
-	if parsed is Array:
-		return parsed
-	return []
 
 # ===========================================================
 # WEJŚCIE – pauza przez ESC (Poprawka #14)
@@ -449,6 +486,7 @@ func _on_rotational_completed(_activity, success: bool) -> void:
 	is_activity_active = false
 	if success:
 		score += 25
+	_check_and_advance_section()
 	get_tree().create_timer(0.35).timeout.connect(_on_spawn_timer_timeout)
 
 func _on_activity_completed(_activity, success: bool) -> void:
@@ -456,7 +494,20 @@ func _on_activity_completed(_activity, success: bool) -> void:
 	if success:
 		score += 10
 		DifficultyManager.report_reaction_time(0.5)
+	_check_and_advance_section()
 	get_tree().create_timer(0.35).timeout.connect(_on_spawn_timer_timeout)
+
+# ===========================================================
+# SPRAWDZANIE I PRZEJŚCIE DO NASTĘPNEJ SEKCJI
+# ===========================================================
+func _check_and_advance_section() -> void:
+	if current_section >= 3:
+		return
+	var now: float = Time.get_ticks_msec() / 1000.0
+	var elapsed: float = now - section_start_time
+	if elapsed >= cumulative_section_ends[current_section]:
+		current_section += 1
+		print("[Rehagame] Przejście do sekcji ", current_section, " typ: ", section_order[current_section] if current_section < 4 else "KONIEC")
 
 # ===========================================================
 # NAPRAW A: EKRAN WYBORU TRUDNOŚCI (po kliknięciu Start)
@@ -540,8 +591,14 @@ func _on_difficulty_selected(diff: DifficultyManager.Difficulty) -> void:
 	if diff == DifficultyManager.Difficulty.ADAPTIVE:
 		DifficultyManager.reset_adaptive()
 	_reset_session_data()
+	
+	# === NOWA LOGIKA 4 SEKCJI ===
+	_generate_sections()
+	section_start_time = Time.get_ticks_msec() / 1000.0
+	current_section = 0
+	
 	session_timer.start()
-	spawn_timer.start(MIN_SPAWN_DELAY)
+	spawn_timer.start(0.6)   # pierwsze spawn szybkie
 	session_active = true
 	if difficulty_screen:
 		difficulty_screen.visible = false

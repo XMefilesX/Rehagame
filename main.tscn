@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://c2moxdg0s1u01"]
 
-[ext_resource type="Script" uid="uid://dlpdngv60okub" path="res://DifficultyManager.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://d2n4hd6ojb7bo" path="res://main.gd" id="1_main"]
 
 [node name="Main" type="Node2D" unique_id=1466869044]
-script = ExtResource("1_ig7tw")
+script = ExtResource("1_main")
 
 [node name="Tlo" type="ColorRect" parent="." unique_id=1279080319]
 anchors_preset = 15

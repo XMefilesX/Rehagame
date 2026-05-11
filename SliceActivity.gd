@@ -21,7 +21,6 @@ func _input(event: InputEvent) -> void:
 	if not active or not event is InputEventMouseMotion:
 		return
 	var current_pos = event.position
-	# Proste wykrycie swipe: ruch w poziomie > 120px przy małej zmianie Y
 	if abs(current_pos.x - last_mouse_pos.x) > 120 and abs(current_pos.y - last_mouse_pos.y) < 80:
 		swipe_detected = true
 		_complete(true)

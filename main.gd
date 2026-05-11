@@ -36,8 +36,14 @@ const FAST_REACTION_THRESHOLD: float = 0.5
 # ===========================================================
 # ZASOBY
 # ===========================================================
+# ZASOBY
 var target_scene: PackedScene = preload("res://target.tscn")
+var slice_scene: PackedScene = preload("res://SliceActivity.tscn")
+var reaction_scene: PackedScene = preload("res://ReactionClickActivity.tscn")
+var circle_scene: PackedScene = preload("res://CircleSpinActivity.tscn")
 
+var rotational_active: bool = false
+var current_spawn_timer: Timer
 # ===========================================================
 # DANE SESJI
 # ===========================================================
@@ -109,10 +115,52 @@ func _reset_session_data() -> void:
 # SPAWN CELÓW
 # ===========================================================
 func _on_spawn_timer_timeout() -> void:
-	if not session_active:
+	if not session_active or rotational_active:
 		return
-	_spawn_target()
-	spawn_timer.start(randf_range(MIN_SPAWN_DELAY, MAX_SPAWN_DELAY))
+
+	var roll = randf()
+	var activity = null
+
+	if roll < 0.35:
+		activity = target_scene.instantiate()
+		add_child(activity)
+		var lifetime = DifficultyManager.get_timeout()
+		var spawn_delay = DifficultyManager.get_spawn_delay(lifetime)
+		if is_instance_valid(current_spawn_timer):
+			current_spawn_timer.queue_free()
+		current_spawn_timer = Timer.new()
+		current_spawn_timer.wait_time = spawn_delay
+		current_spawn_timer.one_shot = true
+		current_spawn_timer.timeout.connect(_on_spawn_timer_timeout)
+		add_child(current_spawn_timer)
+		current_spawn_timer.start()
+		return
+	elif roll < 0.55:
+		activity = slice_scene.instantiate()
+	elif roll < 0.75:
+		activity = reaction_scene.instantiate()
+	else:
+		activity = circle_scene.instantiate()
+		rotational_active = true
+
+	add_child(activity)
+
+	var lifetime = DifficultyManager.get_timeout()
+
+	if DifficultyManager.is_solo_only(activity):
+		activity.activity_completed.connect(_on_rotational_completed)
+	else:
+		var spawn_delay = DifficultyManager.get_spawn_delay(lifetime)
+		activity.activity_completed.connect(_on_activity_completed.bind(activity))
+
+		if is_instance_valid(current_spawn_timer):
+			current_spawn_timer.queue_free()
+		current_spawn_timer = Timer.new()
+		current_spawn_timer.wait_time = spawn_delay
+		current_spawn_timer.one_shot = true
+		current_spawn_timer.timeout.connect(_on_spawn_timer_timeout)
+		add_child(current_spawn_timer)
+		current_spawn_timer.start()
 
 func _spawn_target() -> void:
 	var target: Target = target_scene.instantiate()
@@ -382,3 +430,14 @@ func _on_clear_progress_pressed() -> void:
 		file.close()
 	# Odśwież widok
 	_show_progress()
+
+func _on_rotational_completed(success: bool) -> void:
+	rotational_active = false
+	if success:
+		score += 25
+	_on_spawn_timer_timeout()
+
+func _on_activity_completed(success: bool, activity) -> void:
+	if success:
+		score += 10
+		DifficultyManager.report_reaction_time(0.5)

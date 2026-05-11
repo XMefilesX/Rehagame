@@ -15,6 +15,10 @@ run/main_scene="uid://c2moxdg0s1u01"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+DifficultyManager="*res://DifficultyManager.gd"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/ai_assistant_hub/plugin.cfg")
@@ -35,7 +39,3 @@ ai_assistant_hub/preferences/audio_hints=true
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-
-[autoload]
-
-DifficultyManager="*res://DifficultyManager.gd"

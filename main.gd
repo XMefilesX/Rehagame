@@ -47,7 +47,7 @@ var rotational_active: bool = false
 var current_spawn_timer: Timer
 
 # ===========================================================
-# NOWA STRUKTURA: 4 SEKCJE (losowa kolejność)
+# NOWA STRUKTURA: 4 SEKCJE (losowa kolejność) – JEDEN CIĄGŁY LOOP
 # ===========================================================
 enum ActivityType { TARGET, SLICE, REACTION, CIRCLE }
 
@@ -179,11 +179,14 @@ func _generate_sections() -> void:
 	print("[Rehagame] Czasy sekcji: ", section_durations, " (suma: ", cum, ")")
 
 # ===========================================================
-# SPAWN CELÓW – TERAZ ZGODNIE Z BIEŻĄCĄ SEKCJĄ (tylko 1 typ na sekcję)
+# SPAWN – JEDEN CIĄGŁY LOOP ZGODNIE Z BIEŻĄCĄ SEKCJĄ
 # ===========================================================
 func _on_spawn_timer_timeout() -> void:
-	if not session_active or rotational_active or is_activity_active:
+	if not session_active:
 		return
+
+	# 1. Sprawdź czy czas na zmianę segmentu (na podstawie czasu rzeczywistego)
+	_check_and_advance_section()
 
 	if current_section >= 4:
 		return
@@ -195,26 +198,31 @@ func _on_spawn_timer_timeout() -> void:
 	match act_type:
 		ActivityType.TARGET:
 			var target = target_scene.instantiate()
-			# NAPRAW A: losowa pozycja + set_main (wcześniej target pojawiał się tylko w lewym górnym rogu i nie rejestrował trafień)
 			target.position = Vector2(
 				randf_range(SPAWN_MIN_X, SPAWN_MAX_X),
 				randf_range(SPAWN_MIN_Y, SPAWN_MAX_Y)
 			)
 			target.set_main(self)
 			add_child(target)
+			# Dla targeta NIE blokujemy długo – chcemy wiele kwadratów w segmencie
 			is_activity_active = true
-			get_tree().create_timer(1.5).timeout.connect(func(): is_activity_active = false)
-			return
+			get_tree().create_timer(0.3).timeout.connect(func(): is_activity_active = false)
+			# Nie return – spawn_timer będzie dalej strzelał co ~1s
 		ActivityType.SLICE:
+			if is_activity_active or rotational_active:
+				return
 			activity = slice_scene.instantiate()
-			# Losowa długość aktywności (skalowanie procentowe względem trudności)
 			if activity:
 				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.75, 1.35)
 		ActivityType.REACTION:
+			if is_activity_active or rotational_active:
+				return
 			activity = reaction_scene.instantiate()
 			if activity:
 				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.7, 1.3)
 		ActivityType.CIRCLE:
+			if is_activity_active or rotational_active:
+				return
 			activity = circle_scene.instantiate()
 			is_rot = true
 			rotational_active = true
@@ -238,11 +246,9 @@ func _on_spawn_timer_timeout() -> void:
 func register_hit(reaction_time: float) -> void:
 	reaction_times.append(reaction_time)
 	hits += 1
-	# System punktów: base + bonus za szybką reakcję (Poprawka #10)
 	score += POINTS_PER_HIT
 	if reaction_time < FAST_REACTION_THRESHOLD:
 		score += POINTS_BONUS_FAST
-	# NAPRAW A: po trafieniu targeta sprawdzamy czy można przejść do następnej sekcji (target nie emituje activity_completed)
 	_check_and_advance_section()
 
 # ===========================================================
@@ -262,7 +268,6 @@ func _show_results() -> void:
 	label_trafienia.text = "Trafienia: %d" % hits
 	label_punkty.text    = "Wynik: %d pkt" % score
 
-	# Warunek wygranej: niski czas reakcji LUB wysoki wynik punktowy (zgodne z PDF)
 	if (hits > 0 and average < WIN_THRESHOLD) or score >= MIN_SCORE_FOR_WIN:
 		label_wynik.text     = "WYGRAŁEŚ!"
 		label_wynik.modulate = Color.GREEN
@@ -272,7 +277,7 @@ func _show_results() -> void:
 
 	panel_wynikow.visible = true
 	menu.visible          = true
-	btn_start.visible     = false   # Tylko Restart po zakończeniu sesji
+	btn_start.visible     = false
 
 	_save_session(average)
 
@@ -326,7 +331,6 @@ func _load_sessions() -> Array:
 # ===========================================================
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and session_active:
-		# Zatrzymaj sesję i pokaż menu pauzy
 		session_active = false
 		spawn_timer.stop()
 		session_timer.stop()
@@ -339,11 +343,12 @@ func _input(event: InputEvent) -> void:
 			difficulty_screen.visible = false
 
 # ===========================================================
-# NOWE FUNKCJE: EKRAN "MOJE POSTĘPY" (wymaganie PDF – tekstowa lista sesji)
+# NOWE FUNKCJE: EKRAN "MOJE POSTĘPY"
 # ===========================================================
 func _create_progress_screen() -> void:
 	progress_screen = CanvasLayer.new()
-	progress_screen.name = "ProgressScreen"
+	progress_screen.name = "ProgressScreen
+" 
 	progress_screen.visible = false
 	add_child(progress_screen)
 	
@@ -359,11 +364,9 @@ func _create_progress_screen() -> void:
 	progress_panel.offset_bottom = 220.0
 	progress_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	progress_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	# Jasne tło panelu dla kontrastu
 	progress_panel.modulate = Color(0.95, 0.95, 0.98, 1)
 	progress_screen.add_child(progress_panel)
 	
-	# Tytuł ekranu
 	var title := Label.new()
 	title.text = "📊 Moje postępy – historia treningów"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -374,7 +377,6 @@ func _create_progress_screen() -> void:
 	title.anchors_preset = 10
 	progress_panel.add_child(title)
 	
-	# Kontener przewijany z listą
 	var scroll := ScrollContainer.new()
 	scroll.anchors_preset = 15
 	scroll.anchor_left = 0.04
@@ -391,7 +393,6 @@ func _create_progress_screen() -> void:
 	progress_list.add_theme_constant_override("separation", 8)
 	scroll.add_child(progress_list)
 	
-	# Przyciski akcji na dole
 	var btn_box := HBoxContainer.new()
 	btn_box.anchors_preset = 12
 	btn_box.anchor_left = 0.1
@@ -418,26 +419,21 @@ func _create_progress_screen() -> void:
 	btn_box.add_child(btn_clear)
 
 func _style_ui() -> void:
-	# Wysoki kontrast + duże czcionki dla dostępności (zgodne z PDF)
-	# Tytuł główny
 	if has_node("Tlo/LabelTytul"):
 		var tytul: Label = $Tlo/LabelTytul
 		tytul.set("theme_override_font_sizes/font_size", 32)
 		tytul.modulate = Color.WHITE
 	
-	# Etykiety w panelu wyników
 	for lbl in [label_sredni, label_trafienia, label_punkty, label_wynik]:
 		if lbl:
 			lbl.set("theme_override_font_sizes/font_size", 20)
-			lbl.modulate = Color(0.1, 0.1, 0.15, 1)  # ciemny tekst na jasnym panelu
+			lbl.modulate = Color(0.1, 0.1, 0.15, 1)
 	
-	# Przyciski w menu (w tym nowy reset)
 	for btn in [btn_start, btn_restart, btn_progress, btn_reset_adaptive]:
 		if btn:
 			btn.set("theme_override_font_sizes/font_size", 22)
 			btn.modulate = Color.WHITE
 	
-	# Przyciski ekranu trudności
 	for btn in [btn_easy, btn_normal, btn_hard, btn_adaptive]:
 		if btn:
 			btn.set("theme_override_font_sizes/font_size", 18)
@@ -450,7 +446,6 @@ func _on_progress_pressed() -> void:
 	_show_progress()
 
 func _show_progress() -> void:
-	# Wyczyść starą listę
 	for child in progress_list.get_children():
 		child.queue_free()
 	
@@ -463,7 +458,6 @@ func _show_progress() -> void:
 		empty.modulate = Color(0.4, 0.4, 0.5, 1)
 		progress_list.add_child(empty)
 	else:
-		# Najnowsze na górze (odwróć tablicę)
 		var sorted := sessions.duplicate()
 		sorted.reverse()
 		var to_show := sorted.slice(0, 12) if sorted.size() > 12 else sorted
@@ -482,7 +476,6 @@ func _show_progress() -> void:
 			entry.modulate = Color(0.2, 0.6, 0.3, 1) if is_win else Color(0.7, 0.3, 0.3, 1)
 			progress_list.add_child(entry)
 			
-			# Separator
 			var sep := HSeparator.new()
 			sep.modulate = Color(0.7, 0.7, 0.75, 0.6)
 			progress_list.add_child(sep)
@@ -499,7 +492,6 @@ func _on_clear_progress_pressed() -> void:
 	if file:
 		file.store_string("[]")
 		file.close()
-	# Odśwież widok
 	_show_progress()
 
 func _on_rotational_completed(_activity, success: bool) -> void:
@@ -613,20 +605,18 @@ func _on_difficulty_selected(diff: DifficultyManager.Difficulty) -> void:
 		DifficultyManager.reset_adaptive()
 	_reset_session_data()
 	
-	# === NOWA LOGIKA 4 SEKCJI ===
 	_generate_sections()
 	section_start_time = Time.get_ticks_msec() / 1000.0
 	current_section = 0
 	
 	session_timer.start()
-	spawn_timer.start(0.6)   # pierwsze spawn szybkie
+	spawn_timer.start(0.6)
 	session_active = true
 	if difficulty_screen:
 		difficulty_screen.visible = false
 
 func _on_reset_adaptive_pressed() -> void:
 	DifficultyManager.reset_adaptive()
-	# Prosty komunikat powiadomienia
 	var notif := Label.new()
 	notif.text = "✅ Adaptive zresetowany do bazowego timeoutu 1.0s"
 	notif.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

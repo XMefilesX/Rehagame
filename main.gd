@@ -195,6 +195,12 @@ func _on_spawn_timer_timeout() -> void:
 	match act_type:
 		ActivityType.TARGET:
 			var target = target_scene.instantiate()
+			# NAPRAW A: losowa pozycja + set_main (wcześniej target pojawiał się tylko w lewym górnym rogu i nie rejestrował trafień)
+			target.position = Vector2(
+				randf_range(SPAWN_MIN_X, SPAWN_MAX_X),
+				randf_range(SPAWN_MIN_Y, SPAWN_MAX_Y)
+			)
+			target.set_main(self)
 			add_child(target)
 			is_activity_active = true
 			get_tree().create_timer(1.5).timeout.connect(func(): is_activity_active = false)
@@ -236,6 +242,8 @@ func register_hit(reaction_time: float) -> void:
 	score += POINTS_PER_HIT
 	if reaction_time < FAST_REACTION_THRESHOLD:
 		score += POINTS_BONUS_FAST
+	# NAPRAW A: po trafieniu targeta sprawdzamy czy można przejść do następnej sekcji (target nie emituje activity_completed)
+	_check_and_advance_section()
 
 # ===========================================================
 # KONIEC SESJI

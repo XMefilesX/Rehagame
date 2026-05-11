@@ -63,6 +63,17 @@ var progress_list: VBoxContainer
 var btn_close_progress: Button
 
 # ===========================================================
+# NOWE: ekran wyboru trudności + reset adaptive (NAPRAW A)
+# ===========================================================
+var btn_reset_adaptive: Button
+var difficulty_screen: CanvasLayer
+var difficulty_panel: Panel
+var btn_easy: Button
+var btn_normal: Button
+var btn_hard: Button
+var btn_adaptive: Button
+
+# ===========================================================
 # CYKL ŻYCIA
 # ===========================================================
 func _ready() -> void:
@@ -88,7 +99,15 @@ func _ready() -> void:
 	$Menu/VBoxMenuContainer.add_child(btn_progress)
 	btn_progress.pressed.connect(_on_progress_pressed)
 
+	# NAPRAW A: dodaj przycisk resetu adaptacyjnego
+	btn_reset_adaptive = Button.new()
+	btn_reset_adaptive.text = "🔄 Reset Adaptive"
+	btn_reset_adaptive.custom_minimum_size = Vector2(240, 60)
+	$Menu/VBoxMenuContainer.add_child(btn_reset_adaptive)
+	btn_reset_adaptive.pressed.connect(_on_reset_adaptive_pressed)
+
 	_create_progress_screen()
+	_create_difficulty_screen()
 	_style_ui()
 
 # ===========================================================
@@ -98,10 +117,8 @@ func _on_start_pressed() -> void:
 	if progress_screen:
 		progress_screen.visible = false
 	menu.visible = false
-	_reset_session_data()
-	session_timer.start()
-	spawn_timer.start(MIN_SPAWN_DELAY)
-	session_active = true
+	# NAPRAW A: zamiast natychmiastowego startu – pokaż ekran wyboru trudności
+	_show_difficulty_screen()
 
 func _on_restart_pressed() -> void:
 	get_tree().reload_current_scene()
@@ -260,6 +277,8 @@ func _input(event: InputEvent) -> void:
 		btn_restart.visible = true
 		if progress_screen:
 			progress_screen.visible = false
+		if difficulty_screen:
+			difficulty_screen.visible = false
 
 # ===========================================================
 # NOWE FUNKCJE: EKRAN "MOJE POSTĘPY" (wymaganie PDF – tekstowa lista sesji)
@@ -354,10 +373,16 @@ func _style_ui() -> void:
 			lbl.set("theme_override_font_sizes/font_size", 20)
 			lbl.modulate = Color(0.1, 0.1, 0.15, 1)  # ciemny tekst na jasnym panelu
 	
-	# Przyciski w menu (w tym nowy)
-	for btn in [btn_start, btn_restart, btn_progress]:
+	# Przyciski w menu (w tym nowy reset)
+	for btn in [btn_start, btn_restart, btn_progress, btn_reset_adaptive]:
 		if btn:
 			btn.set("theme_override_font_sizes/font_size", 22)
+			btn.modulate = Color.WHITE
+	
+	# Przyciski ekranu trudności
+	for btn in [btn_easy, btn_normal, btn_hard, btn_adaptive]:
+		if btn:
+			btn.set("theme_override_font_sizes/font_size", 18)
 			btn.modulate = Color.WHITE
 
 func _on_progress_pressed() -> void:
@@ -432,3 +457,103 @@ func _on_activity_completed(_activity, success: bool) -> void:
 		score += 10
 		DifficultyManager.report_reaction_time(0.5)
 	get_tree().create_timer(0.35).timeout.connect(_on_spawn_timer_timeout)
+
+# ===========================================================
+# NAPRAW A: EKRAN WYBORU TRUDNOŚCI (po kliknięciu Start)
+# ===========================================================
+func _create_difficulty_screen() -> void:
+	difficulty_screen = CanvasLayer.new()
+	difficulty_screen.name = "DifficultyScreen"
+	difficulty_screen.visible = false
+	add_child(difficulty_screen)
+	
+	difficulty_panel = Panel.new()
+	difficulty_panel.anchors_preset = 8
+	difficulty_panel.anchor_left = 0.5
+	difficulty_panel.anchor_top = 0.5
+	difficulty_panel.anchor_right = 0.5
+	difficulty_panel.anchor_bottom = 0.5
+	difficulty_panel.offset_left = -250.0
+	difficulty_panel.offset_top = -180.0
+	difficulty_panel.offset_right = 250.0
+	difficulty_panel.offset_bottom = 180.0
+	difficulty_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	difficulty_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	difficulty_panel.modulate = Color(0.95, 0.95, 0.98, 1)
+	difficulty_screen.add_child(difficulty_panel)
+	
+	var title := Label.new()
+	title.text = "🎯 Wybierz poziom trudności"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.set("theme_override_font_sizes/font_size", 28)
+	title.modulate = Color(0.1, 0.1, 0.2, 1)
+	title.offset_top = 10
+	title.offset_bottom = 50
+	title.anchors_preset = 10
+	difficulty_panel.add_child(title)
+	
+	var btn_box := VBoxContainer.new()
+	btn_box.anchors_preset = 15
+	btn_box.anchor_left = 0.1
+	btn_box.anchor_top = 0.25
+	btn_box.anchor_right = 0.9
+	btn_box.anchor_bottom = 0.85
+	btn_box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	btn_box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	btn_box.add_theme_constant_override("separation", 12)
+	difficulty_panel.add_child(btn_box)
+	
+	btn_easy = Button.new()
+	btn_easy.text = "🟢 EASY - Łatwy (timeout 1.0s)"
+	btn_easy.custom_minimum_size = Vector2(420, 55)
+	btn_easy.set("theme_override_font_sizes/font_size", 18)
+	btn_easy.pressed.connect(_on_difficulty_selected.bind(DifficultyManager.Difficulty.EASY))
+	btn_box.add_child(btn_easy)
+	
+	btn_normal = Button.new()
+	btn_normal.text = "🟡 NORMAL - Normalny (timeout 1.0s)"
+	btn_normal.custom_minimum_size = Vector2(420, 55)
+	btn_normal.set("theme_override_font_sizes/font_size", 18)
+	btn_normal.pressed.connect(_on_difficulty_selected.bind(DifficultyManager.Difficulty.NORMAL))
+	btn_box.add_child(btn_normal)
+	
+	btn_hard = Button.new()
+	btn_hard.text = "🔴 HARD - Trudny (timeout 0.7s)"
+	btn_hard.custom_minimum_size = Vector2(420, 55)
+	btn_hard.set("theme_override_font_sizes/font_size", 18)
+	btn_hard.pressed.connect(_on_difficulty_selected.bind(DifficultyManager.Difficulty.HARD))
+	btn_box.add_child(btn_hard)
+	
+	btn_adaptive = Button.new()
+	btn_adaptive.text = "🔵 ADAPTIVE - Adaptacyjny (uczy się z Twoich reakcji!)"
+	btn_adaptive.custom_minimum_size = Vector2(420, 55)
+	btn_adaptive.set("theme_override_font_sizes/font_size", 18)
+	btn_adaptive.pressed.connect(_on_difficulty_selected.bind(DifficultyManager.Difficulty.ADAPTIVE))
+	btn_box.add_child(btn_adaptive)
+
+func _show_difficulty_screen() -> void:
+	if difficulty_screen:
+		difficulty_screen.visible = true
+
+func _on_difficulty_selected(diff: DifficultyManager.Difficulty) -> void:
+	DifficultyManager.set_difficulty(diff)
+	if diff == DifficultyManager.Difficulty.ADAPTIVE:
+		DifficultyManager.reset_adaptive()
+	_reset_session_data()
+	session_timer.start()
+	spawn_timer.start(MIN_SPAWN_DELAY)
+	session_active = true
+	if difficulty_screen:
+		difficulty_screen.visible = false
+
+func _on_reset_adaptive_pressed() -> void:
+	DifficultyManager.reset_adaptive()
+	# Prosty komunikat powiadomienia
+	var notif := Label.new()
+	notif.text = "✅ Adaptive zresetowany do bazowego timeoutu 1.0s"
+	notif.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	notif.set("theme_override_font_sizes/font_size", 16)
+	notif.modulate = Color(0.2, 0.8, 0.2, 1)
+	notif.offset_top = 80
+	$Menu.add_child(notif)
+	get_tree().create_timer(2.5).timeout.connect(func(): if is_instance_valid(notif): notif.queue_free())

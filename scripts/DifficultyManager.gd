@@ -1,4 +1,3 @@
-class_name DifficultyManager
 extends Node
 
 enum Difficulty { EASY, NORMAL, HARD, ADAPTIVE }

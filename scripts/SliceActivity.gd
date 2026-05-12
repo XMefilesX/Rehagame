@@ -1,7 +1,7 @@
 class_name SliceActivity
 extends Node2D
 
-signal activity_completed(success: bool)
+signal activity_completed(success: bool, reaction_time: float)
 
 @export var max_time: float = 2.0
 
@@ -96,10 +96,11 @@ func _line_intersects_rect(p1: Vector2, p2: Vector2, c: Vector2, s: float) -> bo
 		return (min(p1.y, p2.y) < c.y - half and max(p1.y, p2.y) > c.y + half)
 
 func _complete(success: bool) -> void:
+	var reaction_time: float = max_time - time_left
 	active = false
 	set_process(false)
 	set_process_input(false)
-	emit_signal("activity_completed", success)
+	activity_completed.emit(success, reaction_time)
 	queue_free()
 
 func _draw() -> void:

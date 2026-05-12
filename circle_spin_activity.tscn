@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://nlgqg3yns2yf"]
-
-[ext_resource type="Script" uid="uid://cd33jnubbw5hx" path="res://circle_spin_activity.gd" id="1_et2u4"]
-
-[node name="CircleSpinActivity" type="Node2D" unique_id=65118714]
-script = ExtResource("1_et2u4")

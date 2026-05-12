@@ -2,10 +2,10 @@ class_name Target
 extends Area2D
 
 # Czas pojawienia się celu (w sekundach od uruchomienia)
+@onready var color_rect: ColorRect = $ColorRect
+
 var spawn_time: float = 0.0
-# Referencja do węzła Main – ustawiana przez Main.spawn_target()
 var main_node: Node = null
-# Prędkość ruchu celu (dla elementu śledzenia obiektów – wymaganie PDF)
 var velocity: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
@@ -36,8 +36,7 @@ func _on_input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) ->
 
 ## Efekt wizualny hover – podświetl cel na jaśniejszy odcień
 func _on_mouse_entered() -> void:
-	$ColorRect.color = Color(1.0, 0.4, 0.4, 1.0)
+	color_rect.color = Color(1.0, 0.4, 0.4, 1.0)
 
-## Przywróć kolor po opuszczeniu
 func _on_mouse_exited() -> void:
-	$ColorRect.color = Color(1.0, 0.0, 0.0, 1.0)
+	color_rect.color = Color(1.0, 0.0, 0.0, 1.0)

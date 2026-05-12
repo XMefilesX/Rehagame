@@ -1,7 +1,7 @@
 class_name ReactionClickActivity
 extends Node2D
 
-signal activity_completed(success: bool)
+signal activity_completed(success: bool, reaction_time: float)
 
 @export var max_time: float = 1.2
 
@@ -35,10 +35,11 @@ func _input(event: InputEvent) -> void:
 		_complete(true)
 
 func _complete(success: bool) -> void:
+	var reaction_time: float = max_time - time_left
 	active = false
 	set_process(false)
 	set_process_input(false)
-	emit_signal("activity_completed", success)
+	activity_completed.emit(success, reaction_time)
 	queue_free()
 
 func _draw() -> void:

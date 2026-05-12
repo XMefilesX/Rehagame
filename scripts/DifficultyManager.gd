@@ -1,7 +1,5 @@
-# DifficultyManager.gd
+class_name DifficultyManager
 extends Node
-
-const CircleSpinActivityScript = preload("res://CircleSpinActivity.gd")
 
 enum Difficulty { EASY, NORMAL, HARD, ADAPTIVE }
 
@@ -18,7 +16,9 @@ func set_difficulty(new_diff: Difficulty) -> void:
 
 func get_base_timeout() -> float:
 	match current_difficulty:
-		Difficulty.EASY, Difficulty.NORMAL:
+		Difficulty.EASY:
+			return 2.0
+		Difficulty.NORMAL:
 			return 1.0
 		Difficulty.HARD:
 			return 0.7
@@ -40,9 +40,6 @@ func get_spawn_delay(lifetime: float) -> float:
 		Difficulty.ADAPTIVE:
 			return lifetime * 0.7
 	return 0.5
-
-func is_solo_only(activity) -> bool:
-	return activity is CircleSpinActivityScript
 
 func report_reaction_time(reaction: float) -> void:
 	if current_difficulty == Difficulty.ADAPTIVE:

@@ -17,7 +17,8 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-DifficultyManager="*res://DifficultyManager.gd"
+DifficultyManager="*res://scripts/DifficultyManager.gd"
+SoundManager="*res://scripts/SoundManager.gd"
 
 [editor_plugins]
 

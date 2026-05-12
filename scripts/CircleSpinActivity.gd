@@ -1,7 +1,7 @@
 class_name CircleSpinActivity
 extends Node2D
 
-signal activity_completed(success: bool)
+signal activity_completed(success: bool, reaction_time: float)
 
 @export var max_time: float = 2.0
 @export var required_rotation: float = 2.0 * PI
@@ -47,10 +47,11 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _complete(success: bool) -> void:
+	var reaction_time: float = max_time - time_left
 	active = false
 	set_process(false)
 	set_process_input(false)
-	emit_signal("activity_completed", success)
+	activity_completed.emit(success, reaction_time)
 	queue_free()
 
 func _draw() -> void:

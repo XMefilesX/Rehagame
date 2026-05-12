@@ -5,13 +5,14 @@ extends Area2D
 @onready var color_rect: ColorRect = $ColorRect
 
 var spawn_time: float = 0.0
-var main_node: Node = null
+var main_node: Node   = null
 var velocity: Vector2 = Vector2.ZERO
+var max_time: float   = 1.0   # ustawiany przez Main przed add_child
 
 func _ready() -> void:
 	spawn_time = Time.get_ticks_msec() / 1000.0
-	# Losowy ruch w lewo/prawo i góra/dół – gracz musi śledzić cel
 	velocity = Vector2(randf_range(-45.0, 45.0), randf_range(-35.0, 35.0))
+	get_tree().create_timer(max_time).timeout.connect(queue_free)
 
 ## Ustawia referencję do węzła Main (wywoływane przez Main po add_child)
 func set_main(node: Node) -> void:

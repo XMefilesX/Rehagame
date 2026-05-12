@@ -189,6 +189,7 @@ func _on_spawn_timer_timeout() -> void:
 				randf_range(SPAWN_MIN_X, SPAWN_MAX_X),
 				randf_range(SPAWN_MIN_Y, SPAWN_MAX_Y)
 			)
+			target.max_time = DifficultyManager.get_timeout_for("target")
 			target.set_main(self)
 			add_child(target)
 			is_activity_active = true
@@ -198,13 +199,13 @@ func _on_spawn_timer_timeout() -> void:
 				return
 			activity = slice_scene.instantiate()
 			if activity:
-				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.75, 1.35)
+				activity.max_time = DifficultyManager.get_timeout_for("slice")
 		ActivityType.REACTION:
 			if is_activity_active or rotational_active:
 				return
 			activity = reaction_scene.instantiate()
 			if activity:
-				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.7, 1.3)
+				activity.max_time = DifficultyManager.get_timeout_for("reaction")
 		ActivityType.CIRCLE:
 			if is_activity_active or rotational_active:
 				return
@@ -212,7 +213,7 @@ func _on_spawn_timer_timeout() -> void:
 			is_rot = true
 			rotational_active = true
 			if activity:
-				activity.max_time = DifficultyManager.get_base_timeout() * randf_range(0.8, 1.4)
+				activity.max_time = DifficultyManager.get_timeout_for("circle")
 
 	if activity == null:
 		return

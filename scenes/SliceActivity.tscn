@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://dm6p9ftk3xw8r"]
 
 [ext_resource type="Script" path="res://scripts/SliceActivity.gd" id="1"]
 

@@ -15,7 +15,7 @@ Gra typu non-immersive exergame w Godot 4.2D.
 - Sterowanie: mysz (główne) + klawiatura (ESC = pauza)
 - Stały poziom trudności „normalny” – brak gamifikacji odznak/poziomów (zgodnie z minimalnym zakresem prototypu)
 
-## Wymagania PDF (zadanie 2.2) – spełnione
+## Wymagania– spełnione
 - Rejestrowanie: czas reakcji, liczba trafień, powtórzenia
 - Lokalny zapis JSON
 - Tekstowy ekran postępów

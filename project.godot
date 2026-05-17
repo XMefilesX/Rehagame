@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+ThemeBuilder="*res://scripts/ThemeBuilder.gd"
 DifficultyManager="*res://scripts/DifficultyManager.gd"
 SoundManager="*res://scripts/SoundManager.gd"
 

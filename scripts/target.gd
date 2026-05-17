@@ -8,11 +8,19 @@ var spawn_time: float = 0.0
 var main_node: Node   = null
 var velocity: Vector2 = Vector2.ZERO
 var max_time: float   = 1.0   # ustawiany przez Main przed add_child
+var _timeout_ref: SceneTreeTimer
 
 func _ready() -> void:
 	spawn_time = Time.get_ticks_msec() / 1000.0
 	velocity = Vector2(randf_range(-45.0, 45.0), randf_range(-35.0, 35.0))
-	get_tree().create_timer(max_time).timeout.connect(queue_free)
+	_timeout_ref = get_tree().create_timer(max_time)
+	_timeout_ref.timeout.connect(_on_timeout)
+
+func _on_timeout() -> void:
+	_timeout_ref = null
+	if is_instance_valid(main_node):
+		main_node.register_miss()
+	queue_free()
 
 ## Ustawia referencję do węzła Main (wywoływane przez Main po add_child)
 func set_main(node: Node) -> void:
@@ -30,6 +38,9 @@ func _on_input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) ->
 	if event is InputEventMouseButton \
 			and event.button_index == MOUSE_BUTTON_LEFT \
 			and event.pressed:
+		if _timeout_ref:
+			_timeout_ref.timeout.disconnect(_on_timeout)
+			_timeout_ref = null
 		var reaction_time: float = (Time.get_ticks_msec() / 1000.0) - spawn_time
 		if is_instance_valid(main_node):
 			main_node.register_hit(reaction_time)

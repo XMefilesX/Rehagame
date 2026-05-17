@@ -45,4 +45,8 @@ func _complete(success: bool) -> void:
 func _draw() -> void:
 	draw_circle(center, 55, Color(1.0, 0.25, 0.25, 0.85))
 	draw_string(ThemeDB.fallback_font, center + Vector2(-90, -100), "KLIKNIJ SZYBKO!", HORIZONTAL_ALIGNMENT_CENTER, -1, 22, Color.WHITE)
+	# Podpowiedź alternatywnego sterowania – stale widoczna, mała i dyskretna.
+	# Wzorzec "always-visible small hint" polecany przez Godot accessibility wątek
+	# i dokumentację WCAG 2.1 (kryterium 3.3.2) jako bardziej dostępny niż tooltip hover.
+	draw_string(ThemeDB.fallback_font, center + Vector2(-75, -72), "lub SPACJA / ENTER", HORIZONTAL_ALIGNMENT_CENTER, -1, 15, Color(1, 1, 1, 0.55))
 	draw_string(ThemeDB.fallback_font, center + Vector2(-45, 110), "CZAS: %.1f s" % time_left, HORIZONTAL_ALIGNMENT_CENTER, -1, 20, Color(1, 1, 0))

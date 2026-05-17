@@ -5,7 +5,11 @@ signal activity_completed(success: bool, reaction_time: float)
 
 @export var max_time: float = 2.0
 @export var required_rotation: float = 2.0 * PI
-@export var min_angular_speed: float = 1.5
+# Próg odrzucający tylko szum/jitter (0.15 rad/s), nie powolny ruch celowy.
+# Poprzednia wartość 1.5 rad/s blokowała EASY (wymaga 1.57 rad/s) i uniemożliwiała
+# ukończenie osobom z drżeniem rąk. Wzorzec "noise gate" zamiast "speed gate"
+# pochodzi z wątku forum.godotengine.org o gesture detection (2024).
+@export var noise_threshold: float = 0.15
 
 var center: Vector2
 var current_angle: float = 0.0
@@ -34,7 +38,7 @@ func _input(event: InputEvent) -> void:
 	var delta = new_angle - current_angle
 	while delta > PI: delta -= 2 * PI
 	while delta < -PI: delta += 2 * PI
-	if abs(delta) < min_angular_speed * get_process_delta_time(): return
+	if abs(delta) < noise_threshold * get_process_delta_time(): return
 	total_rotation += delta
 	current_angle = new_angle
 	if total_rotation >= required_rotation:
@@ -55,7 +59,7 @@ func _complete(success: bool) -> void:
 	queue_free()
 
 func _draw() -> void:
-	draw_circle(center, 160, Color(0.2, 0.6, 1.0, 0.4))
+	draw_circle(center, 160, Color(0.2, 0.6, 1.0, 0.85))
 	draw_arc(center, 160, 0, 2 * PI, 128, Color.WHITE, 4.0, true)
 	var progress = clamp(total_rotation / required_rotation * 100, 0, 100)
 	draw_string(ThemeDB.fallback_font, center + Vector2(-80, -200), "OBRÓĆ 360°: %.0f%%" % progress, HORIZONTAL_ALIGNMENT_CENTER, -1, 24, Color.WHITE)

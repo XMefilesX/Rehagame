@@ -14,6 +14,12 @@ var shape_size: float = 120.0
 var is_circle: bool = false
 var cut_direction: String = "horizontal"
 var has_succeeded: bool = false          # <-- ZMIENIONA NAZW A (unikamy konfliktu)
+var _grace_used: bool = false
+# Dodatkowy czas przyznawany jednorazowo gdy gracz zaczyna przeciągać (mousedown).
+# "Input forgiveness / grace period" – wzorzec polecany przez społeczność Godot
+# (forum.godotengine.org, wątek o mobile swipe UX, 2024) dla użytkowników
+# ze spowolnieniem psychomotorycznym: nagradzamy inicjację ruchu, nie tylko tempo.
+const _GRACE_SECONDS: float = 0.45
 
 func _ready() -> void:
 	var viewport_size = get_viewport_rect().size
@@ -36,6 +42,9 @@ func _input(event: InputEvent) -> void:
 			is_drawing = true
 			cut_points.clear()
 			cut_points.append(event.position)
+			if not _grace_used:
+				_grace_used = true
+				time_left += _GRACE_SECONDS
 		else:
 			is_drawing = false
 			_check_cut()

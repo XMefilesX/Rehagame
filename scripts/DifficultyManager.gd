@@ -5,7 +5,7 @@ enum Difficulty { EASY, NORMAL, HARD, ADAPTIVE }
 # Czasy życia aktywności (sekundy) wg tabeli z dokumentu badawczego
 const _TIMEOUTS: Dictionary = {
 	"circle":   {"EASY": 4.0, "NORMAL": 2.5, "HARD": 1.8},
-	"slice":    {"EASY": 2.5, "NORMAL": 1.5, "HARD": 1.0},
+	"slice":    {"EASY": 2.5, "NORMAL": 1.5, "HARD": 1.3},
 	"reaction": {"EASY": 1.5, "NORMAL": 0.9, "HARD": 0.7},
 	"target":   {"EASY": 2.0, "NORMAL": 1.0, "HARD": 0.7},
 }
@@ -34,7 +34,14 @@ func get_timeout_for(type: String) -> float:
 
 func report_reaction_time(reaction: float) -> void:
 	if current_difficulty == Difficulty.ADAPTIVE:
-		adaptive_multiplier = clamp(reaction * 1.2, 0.4, 2.0)
+		# EMA (alfa=0.25) wygładza skoki po pojedynczych outlierach.
+		# Zakres 0.7–1.5 zapobiega: (a) timeoutom poniżej fizjologicznego minimum RT
+		# (0.7 * 0.9s = 0.63s, margines ~160ms ponad typowe RT+motor), (b) triwialnemu
+		# poziomowi (1.5 * 0.9s = 1.35s). Wzorzec EMA dla DDA polecany przez Wayline
+		# blog "Dynamic Difficulty in Godot" oraz wątek r/godot o adaptive spawning.
+		const EMA_ALPHA: float = 0.25
+		var target: float = clamp(reaction * 1.2, 0.7, 1.5)
+		adaptive_multiplier = EMA_ALPHA * target + (1.0 - EMA_ALPHA) * adaptive_multiplier
 
 func reset_adaptive() -> void:
 	adaptive_multiplier = 1.0
